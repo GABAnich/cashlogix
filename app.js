@@ -32,11 +32,17 @@ const ts_to_iso_date = (log) => ({
 
 const to_csv_row = (log) => `${log.date},${log.value},${log.description}`;
 
+const is_negative_value = (log) => log.value < 0;
+
+const drop_value_sign = (log) => ({ ...log, value: log.value * -1 });
+
 const data = require('./results.json');
 const lines = data
   .map(remove_chat_id)
   .map(remove_original)
   .map(trim_value)
+  .filter(is_negative_value)
+  .map(drop_value_sign)
   .map(value_to_number)
   .map(ts_to_iso_date)
   .map(to_csv_row);
