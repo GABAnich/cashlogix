@@ -10,6 +10,27 @@ console.log('Examples:');
 console.log();
 console.log('   cashlogix logs.json');
 
+const calculate_category_percentages = (expenses) => {
+  const category_total = expenses.reduce((acc, expense) => {
+    const { description, value } = expense;
+    acc[description] = (acc[description] || 0) + value;
+    return acc;
+  }, {});
+
+  const sorted_categories = Object.keys(category_total)
+    .map(k => ({ description: k, value: category_total[k] }))
+    .sort((a, b) => b.value - a.value);
+
+  const total_value = sorted_categories.reduce((acc, curr) => acc + curr.value, 0);
+
+  const category_percentages = sorted_categories.map((category) => {
+    const percentage = (category_total[category.description] / total_value) * 100;
+    return { ...category, percentage }
+  }, {});
+
+  return category_percentages;
+}
+
 const array_to_html_table = (data) => {
   let html = '<table border="1">';
   
@@ -61,7 +82,7 @@ const drop_value_sign = (log) => ({ ...log, value: log.value * -1 });
 
 const date_to_datetime = (log) => ({ ...log, date: new Date(log.date * 1000) });
 
-const data = require('./last_90_days.json');
+const data = require('./results.json');
 const transformed_data = data
   .map(remove_chat_id)
   .map(remove_original)
@@ -102,8 +123,6 @@ client.connect().then(() => {
       ])
         .toArray()
         .then((expenses_by_categories) => {
-          console.log(expenses_by_categories);
-
           const html_out = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -145,7 +164,11 @@ client.connect().then(() => {
     </style>
 </head>
 <body>
+  <h1>Expenses by Categories</h1>
   ${array_to_html_table(expenses_by_categories)}    
+
+  <h2>Percentage</h2>
+  ${array_to_html_table(calculate_category_percentages(transformed_data))}
 </body>
 </html>`;
 
