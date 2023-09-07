@@ -1,6 +1,6 @@
 const fs = require('fs');
 
-const generalize_description = require('./generalize.example');
+const generalize_description = require('./generalize');
 
 console.log('cashlogix - expenses visualization');
 console.log();
@@ -101,7 +101,6 @@ const transformed_data = data
   .filter(is_negative_value)
   .map(drop_value_sign)
   .map(value_to_number)
-  .map(generalize_description)
 
 const lines = transformed_data
   .map(ts_to_iso_date)
@@ -153,10 +152,10 @@ const html_out = `<!DOCTYPE html>
 </head>
 <body>
   <h1>Expenses by Categories</h1>
-  ${array_to_html_table(calculate_expenses_by_categories(transformed_data))}    
+  ${array_to_html_table(calculate_expenses_by_categories(transformed_data.map(generalize_description)))}    
 
   <h2>Percentage</h2>
-  ${array_to_html_table(calculate_category_percentages(transformed_data))}
+  ${array_to_html_table(calculate_category_percentages(transformed_data.map(generalize_description)))}
 </body>
 </html>`;
 
