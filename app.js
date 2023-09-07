@@ -1,7 +1,5 @@
 const fs = require('fs');
 
-const { MongoClient, ServerApiVersion } = require("mongodb");
-
 console.log('cashlogix - expenses visualization');
 console.log();
 console.log('Usage:   cashlogix [options]');
@@ -30,6 +28,19 @@ const calculate_category_percentages = (expenses) => {
 
   return category_percentages;
 }
+
+const calculate_expenses_by_categories = (expenses) => {
+  const category_total = expenses.reduce((acc, curr) => {
+    acc[curr.description] = (acc[curr.description] || 0) + curr.value;
+    return acc;
+  }, {});
+
+  const res = Object.keys(category_total)
+    .map(k => ({ description: k, value: category_total[k] }))
+    .sort((a, b) => b.value - a.value);
+
+  return res;
+};
 
 const array_to_html_table = (data) => {
   let html = '<table border="1">';
@@ -80,8 +91,6 @@ const is_negative_value = (log) => log.value < 0;
 
 const drop_value_sign = (log) => ({ ...log, value: log.value * -1 });
 
-const date_to_datetime = (log) => ({ ...log, date: new Date(log.date * 1000) });
-
 const data = require('./results.json');
 const transformed_data = data
   .map(remove_chat_id)
@@ -99,31 +108,7 @@ const out = ['date,value,description', ...lines].join('\n');
 
 fs.writeFileSync('./out.csv', out);
 
-const client = new MongoClient('mongodb://localhost',  {
-    serverApi: {
-      version: ServerApiVersion.v1,
-      strict: true,
-      deprecationErrors: true,
-    }
-  }
-);
-client.connect().then(() => {
-  const log = client.db("test").collection("log");
-
-  const to_insert = transformed_data
-    .map(date_to_datetime);
-
-  log.deleteMany({}).then(() => {
-    log.insertMany(to_insert).then(() => {
-      console.log(`inserted: ${to_insert.length}`);
-
-      log.aggregate([
-        { $group: { _id: '$description', total: { $sum: '$value' } } },
-        { $sort: { total: -1 } },
-      ])
-        .toArray()
-        .then((expenses_by_categories) => {
-          const html_out = `<!DOCTYPE html>
+const html_out = `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -165,15 +150,11 @@ client.connect().then(() => {
 </head>
 <body>
   <h1>Expenses by Categories</h1>
-  ${array_to_html_table(expenses_by_categories)}    
+  ${array_to_html_table(calculate_expenses_by_categories(transformed_data))}    
 
   <h2>Percentage</h2>
   ${array_to_html_table(calculate_category_percentages(transformed_data))}
 </body>
 </html>`;
 
-          fs.writeFileSync('./out.html', html_out);
-        })
-    });
-  })
-});
+fs.writeFileSync('./out.html', html_out);

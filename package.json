@@ -20,8 +20,5 @@
   "bugs": {
     "url": "https://github.com/GABAnich/cashlogix/issues"
   },
-  "homepage": "https://github.com/GABAnich/cashlogix#readme",
-  "dependencies": {
-    "mongodb": "^6.0.0"
-  }
+  "homepage": "https://github.com/GABAnich/cashlogix#readme"
 }
