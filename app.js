@@ -1,5 +1,7 @@
 const fs = require('fs');
 
+const generalize_description = require('./generalize.example');
+
 console.log('cashlogix - expenses visualization');
 console.log();
 console.log('Usage:   cashlogix [options]');
@@ -99,6 +101,7 @@ const transformed_data = data
   .filter(is_negative_value)
   .map(drop_value_sign)
   .map(value_to_number)
+  .map(generalize_description)
 
 const lines = transformed_data
   .map(ts_to_iso_date)
