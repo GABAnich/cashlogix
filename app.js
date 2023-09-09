@@ -10,6 +10,10 @@ console.log('Examples:');
 console.log();
 console.log('   cashlogix logs.json');
 
+const calculate_total = (expenses) => {
+  return expenses.reduce((acc, expense) => acc += expense.value, 0);
+};
+
 const calculate_category_percentages = (expenses) => {
   const category_total = expenses.reduce((acc, expense) => {
     const { description, value } = expense;
@@ -151,17 +155,23 @@ const html_out = `<!DOCTYPE html>
     </style>
 </head>
 <body>
+  <h1>Total</h1>
+  <h2>${calculate_total(transformed_data.map(generalize_description))}</h2>
+  <hr />
+
   <h1>Expenses by Categories</h1>
   <div>
     <canvas id="expenses_by_category"><canvas/>
   </div>
   ${array_to_html_table(calculate_expenses_by_categories(transformed_data.map(generalize_description)))}    
+  <hr />
 
-  <h2>Percentage</h2>
+  <h1>Percentage</h1>
   <div>
     <canvas id="category_percentages"><canvas/>
   </div>
   ${array_to_html_table(calculate_category_percentages(transformed_data.map(generalize_description)))}
+  <hr />
 
   <script>
     const expenses_by_category = ${JSON.stringify(
