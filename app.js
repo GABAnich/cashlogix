@@ -151,6 +151,35 @@ const html_out = `<!DOCTYPE html>
     </style>
 </head>
 <body>
+  <div>
+    <canvas id="chart"><canvas/>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    const ctx = document.getElementById('chart');
+
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+        datasets: [{
+          label: '# of Votes',
+          data: [12, 19, 3, 5, 2, 3],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  </script>
+
   <h1>Expenses by Categories</h1>
   ${array_to_html_table(calculate_expenses_by_categories(transformed_data.map(generalize_description)))}    
 
