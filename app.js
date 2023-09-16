@@ -1,5 +1,21 @@
 const fs = require("fs");
 
+const Influx = require("influx");
+
+const influx = new Influx.InfluxDB({
+  host: "localhost",
+  database: "payment_logs",
+  schema: [
+    {
+      measurement: "all_events",
+      fields: {
+        value: Influx.FieldType.FLOAT,
+      },
+      tags: ["category"],
+    },
+  ],
+});
+
 const generalize_description = require("./generalize");
 const data = require("./results.json");
 
@@ -35,8 +51,12 @@ const empty_description_to_none = (log) => ({
   description: log.description || "none",
 });
 
-const to_influx_insert = (log) =>
-  `insert all_events,category=${log.description} value=${log.value} ${log.date}`;
+const to_influx_insert = (log) => ({
+  measurement: 'all_events',
+  fields: { value: log.value },
+  tags: { category: log.description },
+  timestamp: log.date,
+})
 
 const transformed_data = data
   .map(remove_chat_id)
@@ -49,11 +69,16 @@ const out = ["date,value,description", ...lines].join("\n");
 
 fs.writeFileSync("./out.csv", out);
 
-transformed_data
+const points = transformed_data
   .map(date_to_nanosecond)
   .map(fill_spaces_in_description)
   .map(empty_description_to_none)
-  .map(to_influx_insert)
-  .map((log) => {
-    console.log(log);
-  });
+  .map(to_influx_insert);
+console.log(points.length);
+
+(async () => {
+  await influx.dropMeasurement("all_events");
+  await Promise.all(points.map(async (point) => {
+    influx.writePoints([point]);
+  }));
+})();
