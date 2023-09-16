@@ -114,6 +114,12 @@ const out = ['date,value,description', ...lines].join('\n');
 
 fs.writeFileSync('./out.csv', out);
 
+console.log(
+  transformed_data
+    .map((log) => `insert events,category=${log.description.split(' ').join('_') || 'none'} value=${log.value} ${log.date*1000*1000*1000}`)
+  .join('\n')
+);
+
 const html_out = `<!DOCTYPE html>
 <html lang="en">
 <head>
