@@ -24,6 +24,7 @@
   "homepage": "https://github.com/GABAnich/cashlogix#readme",
   "dependencies": {
     "dynamodb": "^1.3.0",
+    "influx": "^5.9.3",
     "prettier": "^3.0.3"
   }
 }
