@@ -19,10 +19,10 @@ const errorHandler =
     throw error;
   };
 
-const getAllTransactions = function (chat_id) {
+const getAllTransactions = function (chat_id, table) {
   return db
     .query({
-      TableName: "Transactions",
+      TableName: table,
       KeyConditionExpression: "#chat_id = :chat_id",
       ExpressionAttributeValues: {
         ":chat_id": chat_id,
@@ -37,6 +37,9 @@ const getAllTransactions = function (chat_id) {
 };
 
 (async () => {
-  const data = await getAllTransactions(config.chat_id);
+  const data = await getAllTransactions(config.chat_id, "Transactions");
   fs.writeFileSync("./results.json", JSON.stringify(data));
+
+  const data_usd = await getAllTransactions(config.chat_id, "TransactionsUSD");
+  fs.writeFileSync("./results_usd.json", JSON.stringify(data_usd));
 })();
